@@ -1,16 +1,36 @@
-import React from 'react';
+import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 import ListItem from '~/components/ListItem';
 
-const RepositoryItem = ({ data }) => <ListItem title={data.name} subTitle={data.organization} />;
+export default class RepositoryItem extends Component {
+  static propTypes = {
+    data: PropTypes.shape({
+      name: PropTypes.string,
+      organization: PropTypes.string,
+      avatar: PropTypes.string,
+    }).isRequired,
+    navigation: PropTypes.shape({
+      navigate: PropTypes.func,
+    }).isRequired,
+  };
 
-RepositoryItem.propTypes = {
-  data: PropTypes.shape({
-    name: PropTypes.string,
-    organization: PropTypes.string,
-    avatar: PropTypes.string,
-  }).isRequired,
-};
+  navigateToIssues = () => {
+    const { data, navigation } = this.props;
 
-export default RepositoryItem;
+    navigation.navigate('Issues');
+  };
+
+  render() {
+    const { data } = this.props;
+
+    return (
+      <ListItem
+        title={data.name}
+        subTitle={data.organization}
+        image={data.avatar}
+        onPress={this.navigateToIssues}
+      />
+    );
+  }
+}

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import Header from '~/components/Header';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import api from '~/services/api';
@@ -17,11 +18,30 @@ import RepositoryItem from './RepositoryItem';
 import styles from './styles';
 
 export default class Repositories extends Component {
+  static propTypes = {
+    navigation: PropTypes.shape({
+      navigate: PropTypes.func,
+    }).isRequired,
+  };
+
   state = {
     loading: false,
     repositoryName: '',
     error: false,
     repositories: [],
+  };
+
+  componentDidMount() {
+    this.loadRepositories();
+  }
+
+  loadRepositories = async () => {
+    const repositoriesData = await AsyncStorage.getItem('@GitIssue:repositoryData');
+
+    if (repositoriesData) {
+      const repositories = JSON.parse(repositoriesData);
+      this.setState({ repositories });
+    }
   };
 
   getRepositoryData = async (repositoryName) => {
@@ -38,9 +58,8 @@ export default class Repositories extends Component {
   };
 
   saveRepository = async (repositoryData) => {
-    console.tron.log(repositoryData);
     this.setState({ repositories: [...this.state.repositories, repositoryData] });
-    await AsyncStorage.setItem('@GitIssue:repositoryData', this.state.repositories);
+    await AsyncStorage.setItem('@GitIssue:repositoryData', JSON.stringify(this.state.repositories));
   };
 
   searchRepositories = async () => {
@@ -53,7 +72,10 @@ export default class Repositories extends Component {
 
       try {
         const repositoryData = await this.getRepositoryData(repositoryName);
-        await this.saveRepository(repositoryData);
+
+        if (!this.repositoryExists(repositoryData)) {
+          await this.saveRepository(repositoryData);
+        }
       } catch (error) {
         this.setState({ error: true });
       } finally {
@@ -62,12 +84,24 @@ export default class Repositories extends Component {
     }
   };
 
-  renderListItem = ({ item }) => <RepositoryItem data={item} />;
+  repositoryExists = ({ id }) => {
+    const { repositories } = this.state;
+
+    if (repositories) {
+      return repositories.find(repository => repository.id === id) && true;
+    }
+
+    return false;
+  };
+
+  renderListItem = ({ item }) => {
+    const { navigation } = this.props;
+
+    return <RepositoryItem data={item} navigation={navigation} />;
+  };
 
   renderList = () => {
     const { repositories } = this.state;
-
-    console.tron.log(repositories);
 
     /**
      * STUDY_NOTES:
