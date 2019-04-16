@@ -1,24 +1,21 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
+import { Linking } from 'react-native';
+
 import ListItem from '~/components/ListItem';
 
-export default class RepositoryItem extends Component {
+export default class IssueItem extends Component {
   static propTypes = {
     data: PropTypes.shape({
       name: PropTypes.string,
       organization: PropTypes.string,
       avatar: PropTypes.string,
     }).isRequired,
-    navigation: PropTypes.shape({
-      navigate: PropTypes.func,
-    }).isRequired,
   };
 
-  navigateToIssues = () => {
-    const { data, navigation } = this.props;
-
-    navigation.navigate('Issues', { data });
+  openIssue = async (url) => {
+    await Linking.openURL(url);
   };
 
   render() {
@@ -26,10 +23,10 @@ export default class RepositoryItem extends Component {
 
     return (
       <ListItem
-        title={data.name}
-        subTitle={data.organization}
-        image={data.avatar}
-        onPress={this.navigateToIssues}
+        title={data.title}
+        subTitle={data.user.login}
+        image={data.user.avatar_url}
+        onPress={() => this.openIssue(data.html_url)}
       />
     );
   }
